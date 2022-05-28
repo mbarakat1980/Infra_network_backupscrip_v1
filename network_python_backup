@@ -1,0 +1,439 @@
+import os
+from netmiko import ConnectHandler
+from datetime import date
+from datetime import datetime
+import os
+import smtplib
+from napalm import get_network_driver
+import json
+from tabulate import tabulate
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+#driver_alcatel = get_network_driver('aos')
+
+HOST = "mail.vecima.com"
+#SUBJECT = "Backup Status Report"
+#TO = "vl_admin@vecima.com"
+#FROM = "vl_admin@vecima.com"
+me = 'mohamed.barakat@vecima.com'
+server = 'mail.vecima.com'
+you = 'mohamed.barakat@vecima.com'
+
+
+
+today = date.today()
+
+message0 = "Vecima automated script for creating Backups of Cisco, Juniper, Centec, Fiber Store and Alcatel/Lucent switches using python netmiko library."
+
+print("#############################################################################################################")
+print(message0.upper() + " " + str(today))
+print("#############################################################################################################")
+
+# netmiko Connection string for each device
+
+Network_Device0 = {"host":"sss","username":"admin","password":"2017VideoL48","device_type":"cisco_ios",}
+Network_Device1 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device2 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device3 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device4 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device5 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device6 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device7 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device8 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device9 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device10 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device11 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device12 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device13 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device14 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device15 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device16 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device17 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device18 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device19 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device20 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device21 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device22 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device22 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device23 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",}
+Network_Device24 = {"host":"sss","username":"sss","password":"sss","device_type":"juniper",}
+Network_Device25 = {"host":"sss","username":"sss","password":"sss","device_type":"juniper",}
+Network_Device26 = {"host":"sss","username":"ssss","password":"sss","device_type":"juniper",}
+Network_Device27 = {"host":"sss","username":"sss","password":"sss","device_type":"juniper",}
+
+
+
+#Alcatel Nothing to do with the connection string it will be handled in the if statment this is for just a record for for loop
+Network_Device28 = {"host":'sss',"username":"sss","password":"sss",}
+Network_Device29 = {"host":'sss',"username":"sss","password":"sss",}
+Network_Device30 = {"host":"sss","username":"sss","password":"sss",}
+
+Network_Device31 = {"host":"sss","username":"sss","password":"sss","device_type":"cisco_ios",'secret': '2017VideoL48',}
+
+# adding a dictionary with the connection string details and host name
+ALL_DEVICES = { "EX-CORE-SW":Network_Device0,
+                "EX-SW-1":Network_Device1,
+                "EX-SW-2-1":Network_Device2,
+                "EX-SW-3":Network_Device3,
+                "CENTEC-MLD":Network_Device4,
+                "ST-CORE-SW":Network_Device5,
+                "ST-SW-1":Network_Device6,
+                "RDT-CAT-3850":Network_Device7,
+                "FS-S3900-TC-1-1":Network_Device8,
+                "FS-S3900-RB-2-1":Network_Device9,
+                "FS-S3900-RACK-C3-1":Network_Device10,
+                "CHRIS":Network_Device11,
+                "JOE":Network_Device12,
+                "FS-SWITCH-01":Network_Device13,
+                "EX-SW-2-2":Network_Device14,
+                "GENTEC-1G-RC1":Network_Device15,
+                "TUNL-SW-RC1":Network_Device16,
+                "MGMT-SW-RC1":Network_Device17,
+                "Centec_1G_SW":Network_Device18,
+                "Mass_Modem_Uplink_01":Network_Device19,
+                "FS-S3900-Rack-D3-1":Network_Device21,
+                "FS-S3900-Rack-B1-1":Network_Device22,
+                "FS-S3900-Rack-C3":Network_Device23,
+                "EX4550-SW1":Network_Device24,
+                "EX4550-SW2":Network_Device25,
+                "QFX5100-SW1":Network_Device26,
+                "QFX5100-SW2":Network_Device27,
+                "MELITA-OMNI-R1":Network_Device28,
+                "MELITA-OMNI-R2":Network_Device29,
+                "OMNI6900-X72-SW2":Network_Device30,
+                "C3750G_CM_Uplink":Network_Device31
+
+               }
+success = 0
+failures = 0
+DEVICESCOUNT = len(ALL_DEVICES.keys())
+
+# looping on all devices added to the dictionary
+for item in ALL_DEVICES.items():
+    try:
+
+
+
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+
+        DEVICE_IP = (item[1])
+
+        DNAME = (item[0] + "_" + str(today))
+
+        #PATH0 = "C:/Cisco_Backup/"
+        #PATH0 = "Z:/TestSystemsBackup/Cisco/"
+        #FILEPATH = PATH0 + "Backup_" + str(today)
+        # FILEPATH = "Z:\TestSystemsBackup\Cisco\2020"
+        FILENAME = DNAME
+        LOGFILENAME = "log_" + str(today) + ".txt"
+        SUMMARYFILENAME = "summary_" + str(today) + ".txt"
+
+        current_year = now.strftime('%Y')
+        current_month = now.strftime('%b')
+        current_day = now.strftime('%d')
+        print(current_year)
+        print(current_month)
+        print(current_day)
+
+        PATH0 = "Z:/TestSystemsBackup/Cisco/"
+
+        FILEPATH0 = PATH0 + current_year
+        FILEPATH1 = FILEPATH0 + "/" + current_month
+        FILEPATH2 = FILEPATH1 + "/" + current_day
+
+
+        if not os.path.exists(FILEPATH0):
+             os.makedirs(FILEPATH0)
+        if not os.path.exists(FILEPATH1):
+             os.makedirs(FILEPATH1)
+        if not os.path.exists(FILEPATH2):
+            os.makedirs(FILEPATH2)
+            FULLNAME = os.path.join(FILEPATH, DNAME)
+
+        #if not os.path.exists(FILEPATH):
+        #    os.makedirs(FILEPATH)
+        #    FULLNAME = os.path.join(FILEPATH, DNAME)
+        else:
+            FULLNAME = os.path.join(FILEPATH2, DNAME)
+
+        LOG_FILEPATH = os.path.join(FILEPATH2,LOGFILENAME)
+        SUMMARYFILEPATH = os.path.join(FILEPATH2,SUMMARYFILENAME)
+
+        # creating a name
+        print ("Checking "+str(DEVICE_IP['host']))
+
+
+        # starting ping process
+
+        SP_IP=DEVICE_IP['host']
+        response = os.popen(f"ping {SP_IP}").read()
+
+        if "Received = 4" in response:
+
+
+
+            #failures = 0
+            print(success)
+
+            FILEWRITE = open(LOG_FILEPATH, "a")
+           # FILEWRITE.write(message0.upper() + " " + str(today) + "\n")
+
+            FILEWRITE.write("\n\n**************************************** Starting backup request " + current_time + " ****************************************\n")
+
+            FILEWRITE.write("Checking " + str(DEVICE_IP['host']) + "\n")
+            FILEWRITE.close()
+
+            print(f"Host {item[0].upper()} is up IP address {SP_IP} is alive")
+
+            FILEWRITE = open(LOG_FILEPATH, "a")
+            FILEWRITE.write("Host " + item[0].upper() + " is up IP address " + SP_IP + " is alive \n")
+            FILEWRITE.close()
+
+            HOSTS = (item[1])
+
+            print("##########################################")
+            print ("CONNECTING TO SWITCH ",item[0].upper())
+            print("##########################################")
+
+            FILEWRITE = open(LOG_FILEPATH, "a")
+            FILEWRITE.write("CONNECTING TO SWITCH " + item[0].upper() + "\n")
+            FILEWRITE.close()
+
+            if os.path.isfile(FULLNAME):
+                success = success + 1
+
+                print("###########################################################################################")
+                print ("BACKUP IS DONE PREVIOUSLY FOR THE REQUESTED DATE AND DEVICE FILE NAME IS",FILENAME.upper())
+                print("###########################################################################################")
+
+                FILEWRITE = open(LOG_FILEPATH, "a")
+                FILEWRITE.write("##################################################################################################\n")
+                FILEWRITE.write("BACKUP IS DONE PREVIOUSLY FOR THE REQUESTED DATE AND DEVICE FILE NAME IS " + FILENAME.upper() + " \n")
+                FILEWRITE.write("##################################################################################################\n")
+                FILEWRITE.close()
+            else:
+
+                success = success + 1
+
+                print("################################################################################")
+                print ("CREATING BACKUP FOR DEVICE",item[0].upper(),"FILENAME IS:",FILENAME.upper())
+                print("################################################################################")
+
+                if item[0] == "EX4550-SW1" or item[0] == "EX4550-SW2" or item[0] == "QFX5100-SW1" or item[
+                    0] == "QFX5100-SW2":
+                    print("Working with Juniper")
+                    print(item[0])
+                    connect = ConnectHandler(**HOSTS)
+                    # Adding action command and adding the command output to a variable
+                    config_commands = ['show | display set']
+                    output0 = connect.send_config_set(config_commands)
+                    output1 = connect.send_config_set(config_commands)
+                    output2 = str(output1)
+                    OUTPUT = output2[94:-118]
+                elif item[0] == "MELITA-OMNI-R1":
+                    driver_alcatel = get_network_driver('aos')
+                    device = driver_alcatel('sss', 'sss', 'sss')
+                    device.open()
+                    action = ['show configuration snapshot all']
+                    output1 = device.cli(action)
+                    output2 = str(output1)
+                    output3 = output2[37:-2]
+                    print(output3.replace("\\n", "\n"))
+                    OUTPUT = (output3.replace("\\n", "\n"))
+                elif item[0] == "MELITA-OMNI-R2":
+                    driver_alcatel = get_network_driver('aos')
+                    device = driver_alcatel('sss', 'sss', 'sss')
+                    device.open()
+                    action = ['show configuration snapshot all']
+                    output1 = device.cli(action)
+                    output2 = str(output1)
+                    output3 = output2[37:-2]
+                    print(output3.replace("\\n", "\n"))
+                    OUTPUT = (output3.replace("\\n", "\n"))
+                elif item[0] == "OMNI6900-X72-SW2":
+                    driver_alcatel = get_network_driver('aos')
+                    device = driver_alcatel('sss', 'sss', 'sss')
+                    device.open()
+                    action = ['show configuration snapshot all']
+                    output1 = device.cli(action)
+                    output2 = str(output1)
+                    output3 = output2[37:-2]
+                    print(output3.replace("\\n", "\n"))
+                    OUTPUT = (output3.replace("\\n", "\n"))
+                elif item[0] == "C3750G_CM_Uplink":
+                    print("Working with Cisco")
+                    connect = ConnectHandler(**HOSTS)
+                    conenct2=connect.enable()
+                    # Adding action command and adding the command output to a variable
+                    MyAction0 = ("show running-config")
+                    output0 = connect.send_command(MyAction0)
+                    OUTPUT = output0.replace('^C', "")
+                    connect.disconnect()
+                else:
+                    print("Working with Cisco")
+                    connect = ConnectHandler(**HOSTS)
+                    # Adding action command and adding the command output to a variable
+                    MyAction0 = ("show running-config")
+                    output0 = connect.send_command(MyAction0)
+                    OUTPUT = output0.replace('^C', "")
+                    connect.disconnect()
+
+
+
+                FILEWRITE = open(LOG_FILEPATH, "a")
+                FILEWRITE.write("############################################################################################################\n")
+                FILEWRITE.write("########## CREATING BACKUP FOR DEVICE " + item[0].upper() + "FILENAME IS:" + FILENAME.upper() + " ##########\n")
+                FILEWRITE.write("############################################################################################################\n")
+                FILEWRITE.close()
+
+                FILEWRITE = open(FULLNAME, "w")
+                FILEWRITE.write(OUTPUT)
+                FILEWRITE.close()
+            # Closing session
+
+
+        else:
+            print(f"Host {item[0].upper()} is down IP address {SP_IP} is not alive")
+
+            FILEWRITE = open(LOG_FILEPATH, "a")
+            FILEWRITE.write("\n\n**************************************** Starting backup request " + current_time + " ****************************************\n")
+            FILEWRITE.write("Checking " + str(DEVICE_IP['host']) + "\n")
+            FILEWRITE.write("Host " + item[0].upper() + " is down IP address " + SP_IP + " is not alive \n")
+            FILEWRITE.close()
+
+            print("-------------------------------------------")
+            print ("*** Backup is cancelled for",item[0].upper())
+            print("-------------------------------------------")
+
+            FILEWRITE = open(LOG_FILEPATH, "a")
+            FILEWRITE.write("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n")
+            FILEWRITE.write("$$$$$$$$$$ Backup is cancelled for " + item[0].upper() + "$$$$$$$$$$\n")
+            FILEWRITE.write("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n")
+            FILEWRITE.close()
+            failures = failures+1
+    except:
+        print(f"Host {item[0].upper()} authentication exception error IP Address is {SP_IP}")
+        FILEWRITE = open(LOG_FILEPATH, "a")
+        FILEWRITE.write("*************************************************************************\n")
+        FILEWRITE.write("*************\t Backup failed for host " + item[0].upper() + "\t*************\n")
+        FILEWRITE.write("*************************************************************************\n")
+        FILEWRITE.close()
+        failures = failures + 1
+print("################################################################################")
+print("BACKUP IS COMPLETED",today)
+print("################################################################################")
+
+FILEWRITE = open(LOG_FILEPATH, "a")
+FILEWRITE.write("\n\n############################################################################################################################\n")
+FILEWRITE.write("******************************************** BACKUP IS COMPLETED " + str(today) + " ****************************************\n")
+FILEWRITE.write("############################################################################################################################\n")
+FILEWRITE.write("############################################################################################################################\n\n\n")
+FILEWRITE.close()
+
+print (f"Total number of devices is: {DEVICESCOUNT}  ")
+print (f"Total number of successful backups created is: {success}  ")
+print (f"Total number of unsuccessful backups failure is: {failures}  ")
+
+FILEWRITE = open(SUMMARYFILEPATH, "a")
+
+FILEWRITE.write("##################################################################################################################################################################\n")
+FILEWRITE.write("# \t\t"+(message0 + " " + str(today) +" "+ "time is " + current_time +"\t\t #\n"))
+FILEWRITE.write("##################################################################################################################################################################\n")
+FILEWRITE.write("#\t\t\t\t\t\t\t\t  Backup activity report\t\t\t\t\t\t\t\t\t #\n")
+FILEWRITE.write("##################################################################################################################################################################\n")
+FILEWRITE.write("#\t\tTotal number of devices\t\t#\t\tNumber of Sccessful backups\t\t#\t\tNumber of unsuccessful backups\t\t #\n")
+FILEWRITE.write("##################################################################################################################################################################\n")
+FILEWRITE.write("#\t\t\t"+ str(DEVICESCOUNT)+"\t\t\t#\t\t\t"+ str(success) +"\t\t\t\t#\t\t\t"+ str(failures) +"\t\t\t\t #\n")
+FILEWRITE.write("##################################################################################################################################################################\n")
+#FILEWRITE.write("Total number of devices is: " + str(DEVICESCOUNT) + "\n")
+#FILEWRITE.write("Total number of successful backups created is: " + str(success) + "\n")
+#FILEWRITE.write("Total number of unsuccessful backups failure is: " + str(failures) + "\n")
+
+
+text =(
+"\t\t\t\t\tBACKUP STATUS REPORT\t\t\t\t\t\n"
+"#############################################################################################\n" +
+"#      "+ message0 + "\t                #\n" +
+"#############################################################################################\n" +
+"#      Date is : \t\t" +str(today) +"\t\t "+ "       Time is:\t\t" + current_time +"\t\t\t               #\n"+
+"#############################################################################################\n" +
+"#     Total number of devices      #     Number of Sccessful backups      #      Number of unsuccessful backups              #\n" +
+"#############################################################################################\n" +
+"#\t\t"+ str(DEVICESCOUNT)+"\t\t#\t"+ "\t"+ str(success) +"\t\t\t#\t"+ "\t"+str(failures) +"\t\t\t#\n"+
+"#############################################################################################\n\n\n\n"+
+"Location: Z:\TestSystemsBackup\Cisco\n"+
+"For unsuccessful backups please check the detailed log file in the mentioned location")
+
+FILEWRITE.close()
+
+
+table1 = [['TOTAL NUMBER OF DEVICES', 'NUMBER OF SUCCESSFUL BACKUPS', 'NUMBER OF UNSUCCESSFUL BACKUPS'],
+          [str(DEVICESCOUNT), str(success), str(failures)]]
+#print(str(tabulate(table)))
+print(tabulate(table1, tablefmt='fancy_grid'))
+
+
+
+text = """
+"Vecima automated script for creating Backups of Cisco, Juniper, Centec, Fiber Store and Alcatel/Lucent switches using python netmiko library."
+
+
+VECIMA INFRASTRUCTURE BACKUP STATUS REPORT:
+
+{table}
+
+Location: Z:\TestSystemsBackup\Cisco
+For unsuccessful backups please check the detailed log file in the mentioned location
+
+"""
+
+html = """
+<html>
+<head>
+<style> 
+  table, th, td {{ border: 1px solid black; border-collapse: collapse; }}
+  th, td {{ padding: 5px; }}
+</style>
+</head>
+<body><p>"Vecima automated script for creating Backups of Cisco, Juniper, Centec, Fiber Store and Alcatel/Lucent switches using python netmiko library."
+</p>
+<p>VECIMA INFRASTRUCTURE BACKUP STATUS REPORT:</p>
+{table}
+<p>Location: Z:\TestSystemsBackup\Cisco</p>
+<p>For unsuccessful backups please check the detailed log file in the mentioned location</p>
+</body></html>
+"""
+
+
+text = text.format(table=tabulate(table1, headers="firstrow", tablefmt="grid"))
+html = html.format(table=tabulate(table1, headers="firstrow", tablefmt="html"))
+
+message = MIMEMultipart(
+    "alternative", None, [MIMEText(text), MIMEText(html,'html')])
+
+message['Subject'] = "BACKUP STATUS REPORT"
+message['From'] = me
+message['To'] = you
+
+server = smtplib.SMTP(server)
+#server.sendmail(FROM, [TO], BODY)
+server.sendmail(me, you, message.as_string())
+server.quit()
+
+
+
+"""
+
+BODY = "\r\n".join((
+"From: %s" % FROM,
+"To: %s" % TO,
+"Subject: %s" % SUBJECT ,
+"",
+text
+))
+server = smtplib.SMTP(HOST)
+server.sendmail(FROM, [TO], BODY)
+server.quit()
+"""
